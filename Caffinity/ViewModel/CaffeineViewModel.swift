@@ -7,25 +7,34 @@
 
 import Foundation
 
-class caffeineViewModel {
+class CaffeineViewModel {
     private(set) var entries: [CaffeineEntry] = []
     var onDataChange: (() -> Void)?
     
     private(set) var availableDrinks: [Drink] = []
     
+    var drinksByCategory: [String: [Drink]] {
+        Dictionary(grouping: availableDrinks, by: { $0.category })
+    }
+    
+    var sortedCategories: [String] {
+        drinksByCategory.keys.sorted()
+    }
+    
     init() {
         loadAvailableDrinks()
+        print("ViewModel init: availableDrinks count = \(availableDrinks.count)")
     }
     
     var totalCaffeineToday: Int {
         let calendar = Calendar.current
         let todayEntries = entries.filter { calendar.isDateInToday($0.date) }
-        return todayEntries.reduce(0) { $0 + $1.amoundMG }
+        return todayEntries.reduce(0) { $0 + $1.amountMG }
     }
     
-    func addEntry(name: String, amoundMG: Int, date: Date = Date()) {
-        let newEntrie = CaffeineEntry(name: name, amoundMG: amoundMG, date: date)
-        entries.append(newEntrie)
+    func addEntry(name: String, amountMG: Int, date: Date = Date()) {
+        let newEntry = CaffeineEntry(name: name, amountMG: amountMG, date: date)
+        entries.append(newEntry)
         onDataChange?()
     }
     
@@ -40,23 +49,17 @@ class caffeineViewModel {
     
     private func loadAvailableDrinks() {
         if let url = Bundle.main.url(forResource: "caffeine_data", withExtension: "json") {
+            print("Found JSON file at \(url)")  // << check this logs
             do {
                 let data = try Data(contentsOf: url)
                 let decoder = JSONDecoder()
                 availableDrinks = try decoder.decode([Drink].self, from: data)
+                print("Loaded drinks: \(availableDrinks.map { $0.name })")
             } catch {
-                print("Error Decoding JSON: \(error)")
-                availableDrinks = []
+                print("JSON decode error: \(error)")
             }
         } else {
-            print("could not find caffeine_data.json")
-            availableDrinks = []
+            print("❌ caffeine_data.json not found in main bundle")
         }
     }
-    
-    struct Drink: Codable {
-        let name: String
-        let caffeineMG: Int
-    }
-    
 }

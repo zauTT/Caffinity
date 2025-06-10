@@ -1,0 +1,8 @@
+[
+    { "name": "Espresso", "caffeineMg": 62, "category": "Coffee" },
+    { "name": "Brewed Coffee", "caffeineMg": 95, "category": "Coffee" },
+    { "name": "Black Tea", "caffeineMg": 47, "category": "Tea" },
+    { "name": "Green Tea", "caffeineMg": 28, "category": "Tea" },
+    { "name": "Cola Soda", "caffeineMg": 34, "category": "Cold Drinks" },
+    { "name": "Energy Drink", "caffeineMg": 80, "category": "Cold Drinks" }
+]
