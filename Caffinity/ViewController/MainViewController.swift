@@ -1,13 +1,6 @@
-//
-//  ViewController.swift
-//  Caffinity
-//
-//  Created by Giorgi Zautashvili on 09.06.25.
-//
-
 import UIKit
 
-class ViewController: UIViewController {
+class MainViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -16,4 +9,3 @@ class ViewController: UIViewController {
 
 
 }
-
