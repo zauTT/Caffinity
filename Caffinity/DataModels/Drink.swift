@@ -14,7 +14,7 @@ struct Drink: Codable {
     
     enum CodingKeys: String, CodingKey {
         case name
-        case caffeineMG = "caffeineMg"  // map JSON "caffeineMg" to property "caffeineMG"
+        case caffeineMG = "caffeineMg"
         case category
     }
 }

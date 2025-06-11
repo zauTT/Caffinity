@@ -21,6 +21,12 @@ class CaffeineViewModel {
         drinksByCategory.keys.sorted()
     }
     
+    let dailyLimitMG = 400
+    
+    var hasExceededLimit: Bool {
+        totalCaffeineToday > dailyLimitMG
+    }
+    
     init() {
         loadAvailableDrinks()
         print("ViewModel init: availableDrinks count = \(availableDrinks.count)")
@@ -32,10 +38,12 @@ class CaffeineViewModel {
         return todayEntries.reduce(0) { $0 + $1.amountMG }
     }
     
-    func addEntry(name: String, amountMG: Int, date: Date = Date()) {
+    @discardableResult
+    func addEntry(name: String, amountMG: Int, date: Date = Date()) -> Bool {
         let newEntry = CaffeineEntry(name: name, amountMG: amountMG, date: date)
         entries.append(newEntry)
         onDataChange?()
+        return totalCaffeineToday > dailyLimitMG
     }
     
     func numberOfEntries() -> Int {

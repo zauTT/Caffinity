@@ -43,7 +43,7 @@ class MainViewController: UIViewController {
         setupBindings()
         
         tableView.register(CaffeineEntryCell.self, forCellReuseIdentifier: CaffeineEntryCell.identifier)
-
+        
         tableView.dataSource = self
         addButton.addTarget(self, action: #selector(addDrinkTapped), for: .touchUpInside)
         
@@ -97,8 +97,22 @@ class MainViewController: UIViewController {
             sheet.preferredCornerRadius = 16
         }
         pickerVC.drinks = viewModel.availableDrinks
+        
         pickerVC.onDrinkSelected = { [weak self] drink in
-            self?.viewModel.addEntry(name: drink.name, amountMG: drink.caffeineMG)
+            guard let self = self else { return }
+            let exceeded = self.viewModel.addEntry(name: drink.name, amountMG: drink.caffeineMG)
+            
+            self.dismiss(animated: true) {
+                if exceeded {
+                    let alert = UIAlertController(
+                        title: "⚠️ Caffeine Limit Exceeded",
+                        message: "You’ve consumed more than 400mg of caffeine today. Please be cautious!",
+                        preferredStyle: .alert
+                    )
+                    alert.addAction(UIAlertAction(title: "OK", style: .default))
+                    self.present(alert, animated: true)
+                }
+            }
         }
         pickerVC.modalPresentationStyle = .formSheet
         present(pickerVC, animated: true)
@@ -119,15 +133,6 @@ extension MainViewController: UITableViewDataSource {
         cell.configure(with: entry)
         return cell
     }
-    
-//    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-//        let entry = viewModel.entry(at: indexPath.row)
-//        let cell = tableView.dequeueReusableCell(withIdentifier: "entryCell", for: indexPath)
-//        let formatter = DateFormatter()
-//        formatter.timeStyle = .short
-//        cell.textLabel?.text = "\(entry?.name ?? "") - \(entry?.amountMG ?? 0)mg at \(formatter.string(from: entry?.date ?? Date()))"
-//        return cell
-//    }
     
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt IndexPath: IndexPath) {
         if editingStyle == .delete {
