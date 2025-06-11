@@ -7,7 +7,7 @@
 
 import Foundation
 
-class CaffeineEntry {
+class CaffeineEntry: Codable {
     var name: String
     var amountMG: Int
     var date: Date

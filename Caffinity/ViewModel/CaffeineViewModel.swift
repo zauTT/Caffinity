@@ -8,6 +8,9 @@
 import Foundation
 
 class CaffeineViewModel {
+    
+    private let entriesKey = "caffeineEntries"
+    
     private(set) var entries: [CaffeineEntry] = []
     var onDataChange: (() -> Void)?
     
@@ -29,7 +32,7 @@ class CaffeineViewModel {
     
     init() {
         loadAvailableDrinks()
-        print("ViewModel init: availableDrinks count = \(availableDrinks.count)")
+        loadEntries()
     }
     
     var totalCaffeineToday: Int {
@@ -42,6 +45,7 @@ class CaffeineViewModel {
     func addEntry(name: String, amountMG: Int, date: Date = Date()) -> Bool {
         let newEntry = CaffeineEntry(name: name, amountMG: amountMG, date: date)
         entries.append(newEntry)
+        saveEntries()
         onDataChange?()
         return totalCaffeineToday > dailyLimitMG
     }
@@ -55,15 +59,33 @@ class CaffeineViewModel {
         return entries[index]
     }
     
+    private func saveEntries() {
+        do {
+            let data = try JSONEncoder().encode(entries)
+            UserDefaults.standard.set(data, forKey: entriesKey)
+        } catch {
+            print("Failed to save entries: \(error)")
+        }
+    }
+    
+    private func loadEntries() {
+        guard let data = UserDefaults.standard.data(forKey: entriesKey) else { return }
+        do {
+            entries = try JSONDecoder().decode([CaffeineEntry].self, from: data)
+        } catch {
+            print("fialed to load entries: \(error)")
+        }
+    }
+    
     func deleteEntry(at index: Int) {
         guard index >= 0 && index < entries.count else { return }
         entries.remove(at: index)
+        saveEntries()
         onDataChange?()
     }
     
     private func loadAvailableDrinks() {
         if let url = Bundle.main.url(forResource: "caffeine_data", withExtension: "json") {
-            print("Found JSON file at \(url)")  // << check this logs
             do {
                 let data = try Data(contentsOf: url)
                 let decoder = JSONDecoder()
