@@ -42,6 +42,8 @@ class MainViewController: UIViewController {
         setupLayout()
         setupBindings()
         
+        tableView.register(CaffeineEntryCell.self, forCellReuseIdentifier: CaffeineEntryCell.identifier)
+
         tableView.dataSource = self
         addButton.addTarget(self, action: #selector(addDrinkTapped), for: .touchUpInside)
         
@@ -81,14 +83,19 @@ class MainViewController: UIViewController {
     }
     
     private func updateUI() {
-        totalLabel.text = "Total Caffeine Today: \(viewModel.totalCaffeineToday)mg"
+        totalLabel.text = "Total Caffeine Today: \(viewModel.totalCaffeineToday) mg"
         tableView.reloadData()
     }
     
     @objc private func addDrinkTapped() {
-        print("Drinks passed to picker: \(viewModel.availableDrinks.map { $0.name })") // ✅ DEBUG LINE
-
         let pickerVC = DrinkPickerViewController()
+        pickerVC.modalPresentationStyle = .pageSheet
+        
+        if let sheet = pickerVC.sheetPresentationController {
+            sheet.detents = [.medium()]
+            sheet.prefersGrabberVisible = true
+            sheet.preferredCornerRadius = 16
+        }
         pickerVC.drinks = viewModel.availableDrinks
         pickerVC.onDrinkSelected = { [weak self] drink in
             self?.viewModel.addEntry(name: drink.name, amountMG: drink.caffeineMG)
@@ -104,12 +111,30 @@ extension MainViewController: UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let entry = viewModel.entry(at: indexPath.row)
-        let cell = tableView.dequeueReusableCell(withIdentifier: "entryCell", for: indexPath)
-        let formatter = DateFormatter()
-        formatter.timeStyle = .short
-        cell.textLabel?.text = "\(entry?.name ?? "") - \(entry?.amountMG ?? 0)mg at \(formatter.string(from: entry?.date ?? Date()))"
+        guard let entry = viewModel.entry(at: indexPath.row) else {
+            return UITableViewCell()
+        }
+        
+        let cell = tableView.dequeueReusableCell(withIdentifier: CaffeineEntryCell.identifier, for: indexPath) as! CaffeineEntryCell
+        cell.configure(with: entry)
         return cell
+    }
+    
+//    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+//        let entry = viewModel.entry(at: indexPath.row)
+//        let cell = tableView.dequeueReusableCell(withIdentifier: "entryCell", for: indexPath)
+//        let formatter = DateFormatter()
+//        formatter.timeStyle = .short
+//        cell.textLabel?.text = "\(entry?.name ?? "") - \(entry?.amountMG ?? 0)mg at \(formatter.string(from: entry?.date ?? Date()))"
+//        return cell
+//    }
+    
+    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt IndexPath: IndexPath) {
+        if editingStyle == .delete {
+            viewModel.deleteEntry(at: IndexPath.row)
+            let generator = UIImpactFeedbackGenerator(style: .light)
+            generator.impactOccurred()
+        }
     }
 }
 

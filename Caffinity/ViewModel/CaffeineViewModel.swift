@@ -47,6 +47,12 @@ class CaffeineViewModel {
         return entries[index]
     }
     
+    func deleteEntry(at index: Int) {
+        guard index >= 0 && index < entries.count else { return }
+        entries.remove(at: index)
+        onDataChange?()
+    }
+    
     private func loadAvailableDrinks() {
         if let url = Bundle.main.url(forResource: "caffeine_data", withExtension: "json") {
             print("Found JSON file at \(url)")  // << check this logs
