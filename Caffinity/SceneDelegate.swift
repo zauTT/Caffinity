@@ -19,6 +19,10 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         window = UIWindow(windowScene: scene)
         window?.rootViewController = UINavigationController(rootViewController: MainViewController())
         window?.makeKeyAndVisible()
+        
+        if CommandLine.arguments.contains("--uitesting") {
+            UserDefaults.standard.removeObject(forKey: "caffeineEntries")
+        }
     }
 
     func sceneDidDisconnect(_ scene: UIScene) { }

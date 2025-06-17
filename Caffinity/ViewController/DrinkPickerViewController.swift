@@ -28,6 +28,8 @@ class DrinkPickerViewController: UIViewController, UIPickerViewDataSource, UIPic
             picker.delegate = self
             
             picker.reloadAllComponents()
+            
+            picker.accessibilityIdentifier = "drinkPicker"
         }
         
         private func setupLayout() {

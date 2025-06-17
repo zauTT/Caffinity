@@ -39,10 +39,14 @@ class MainViewController: UIViewController {
         view.backgroundColor = .systemBackground
 //        view.backgroundColor = UIColor(red: 0.0/255.0, green: 63.0/255.0, blue: 45.0/255.0, alpha: 1.0)
         
+        edgeSwipeGesture()
+        
         setupLayout()
         setupBindings()
         
         tableView.register(CaffeineEntryCell.self, forCellReuseIdentifier: CaffeineEntryCell.identifier)
+        
+        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "History >", style: .plain, target: self, action: #selector(showHistory))
         
         tableView.dataSource = self
         addButton.addTarget(self, action: #selector(addDrinkTapped), for: .touchUpInside)
@@ -83,8 +87,26 @@ class MainViewController: UIViewController {
     }
     
     private func updateUI() {
-        totalLabel.text = "Total Caffeine Today: \(viewModel.totalCaffeineToday) mg"
+        totalLabel.text = "Total Caffeine Today: \(viewModel.totalCaffeineToday()) mg"
         tableView.reloadData()
+    }
+    
+    private func edgeSwipeGesture() {
+        let edgeSwipe = UIScreenEdgePanGestureRecognizer(target: self, action: #selector(handleEdgeSwipe(_:)))
+        edgeSwipe.edges = [.right]
+        view.addGestureRecognizer(edgeSwipe)
+    }
+    
+    @objc private func handleEdgeSwipe(_ gesture: UIScreenEdgePanGestureRecognizer) {
+        if gesture.state == .recognized {
+            let historyVC = HistoryViewController()
+            navigationController?.pushViewController(historyVC, animated: true)
+        }
+    }
+    
+    @objc private func showHistory() {
+        let historyVC = HistoryViewController()
+        navigationController?.pushViewController(historyVC, animated: true)
     }
     
     @objc private func addDrinkTapped() {
@@ -121,11 +143,11 @@ class MainViewController: UIViewController {
 
 extension MainViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return viewModel.numberOfEntries()
+        return viewModel.numberOfEntriesToday()
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let entry = viewModel.entry(at: indexPath.row) else {
+        guard let entry = viewModel.entryFromToday(at: indexPath.row) else {
             return UITableViewCell()
         }
         
@@ -134,9 +156,9 @@ extension MainViewController: UITableViewDataSource {
         return cell
     }
     
-    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt IndexPath: IndexPath) {
+    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
-            viewModel.deleteEntry(at: IndexPath.row)
+            viewModel.deleteEntryFromToday(at: indexPath.row)
             let generator = UIImpactFeedbackGenerator(style: .light)
             generator.impactOccurred()
         }
