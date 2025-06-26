@@ -30,43 +30,38 @@ class HistoryViewController: UIViewController {
         title = "History"
         view.backgroundColor = .systemBackground
         
-        setupTableView()
-        setupAverageLabel()
+        setupViews()
         loadData()
     }
     
-    private func setupTableView() {
+    private func setupViews() {
         view.addSubview(tableView)
+        view.addSubview(averageLabel)
+        
         tableView.translatesAutoresizingMaskIntoConstraints = false
+        averageLabel.translatesAutoresizingMaskIntoConstraints = false
         
         NSLayoutConstraint.activate([
             tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -60)
-        ])
-        
-                tableView.delegate = self
-                tableView.dataSource = self
-        
-                tableView.register(UITableViewCell.self, forCellReuseIdentifier: "historyCell")
-    }
-    
-    private func setupAverageLabel() {
-        view.addSubview(averageLabel)
-        averageLabel.translatesAutoresizingMaskIntoConstraints = false
-        
-        NSLayoutConstraint.activate([
-            averageLabel.topAnchor.constraint(equalTo: tableView.bottomAnchor),
+            tableView.bottomAnchor.constraint(equalTo: averageLabel.topAnchor),
+            
             averageLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             averageLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
-            averageLabel.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -8)
+            averageLabel.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -8),
+            averageLabel.heightAnchor.constraint(equalToConstant: 40)
         ])
+        
+        tableView.delegate = self
+        tableView.dataSource = self
+        
+        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "historyCell")
     }
     
     private func loadData() {
         last7DaysData = viewModel.last7DaysEntries()
-        averageLabel.text = "Average daily caffeine intake (last 7 days): \(viewModel.dailyAverageForLast7Days()) mg"
+        averageLabel.text = "Average caffeine (last 7 days): \(viewModel.dailyAverageForLast7Days()) mg"
         tableView.reloadData()
     }
 }

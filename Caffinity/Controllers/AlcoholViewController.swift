@@ -1,19 +1,19 @@
 //
-//  MainViewController.swift
+//  AlcoholViewController.swift
 //  Caffinity
 //
-//  Created by Giorgi Zautashvili on 10.06.25.
+//  Created by Giorgi Zautashvili on 25.06.25.
 //
+
 
 import UIKit
 
-class MainViewController: UIViewController {
+class AlcoholViewController: UIViewController {
     
-    private let viewModel = CaffeineViewModel()
+    private let viewModel = AlcoholViewModel()
     
     private let totalLabel: UILabel = {
         let label = UILabel()
-        label.text = "Total Caffeine Today: 0 mg"
         label.textAlignment = .center
         label.font = .systemFont(ofSize: 19, weight: .bold)
         return label
@@ -21,7 +21,6 @@ class MainViewController: UIViewController {
     
     private let tableView: UITableView = {
         let tv = UITableView()
-//        tv.backgroundColor = UIColor(red: 0.0/255.0, green: 63.0/255.0, blue: 45.0/255.0, alpha: 1.0)
         tv.register(UITableViewCell.self, forCellReuseIdentifier: "entryCell")
         return tv
     }()
@@ -35,22 +34,16 @@ class MainViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = "Caffinity ☕️"
+        title = "Alcohol 🍷"
         view.backgroundColor = .systemBackground
-//        view.backgroundColor = UIColor(red: 0.0/255.0, green: 63.0/255.0, blue: 45.0/255.0, alpha: 1.0)
         
-        edgeSwipeGesture()
+        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "History ❯", style: .plain, target: self, action: #selector(showHistory))
         
         setupLayout()
         setupBindings()
         
-        tableView.register(CaffeineEntryCell.self, forCellReuseIdentifier: CaffeineEntryCell.identifier)
-        
-        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "History >", style: .plain, target: self, action: #selector(showHistory))
-        
         tableView.dataSource = self
         addButton.addTarget(self, action: #selector(addDrinkTapped), for: .touchUpInside)
-        
     }
     
     private func setupLayout() {
@@ -87,48 +80,38 @@ class MainViewController: UIViewController {
     }
     
     private func updateUI() {
-        totalLabel.text = "Total Caffeine Today: \(viewModel.totalCaffeineToday()) mg"
+        totalLabel.text = "Total Alcohol Today: \(viewModel.totalAlcoholToday()) ml"
         tableView.reloadData()
     }
     
-    private func edgeSwipeGesture() {
-        let edgeSwipe = UIScreenEdgePanGestureRecognizer(target: self, action: #selector(handleEdgeSwipe(_:)))
-        edgeSwipe.edges = [.right]
-        view.addGestureRecognizer(edgeSwipe)
-    }
-    
-    @objc private func handleEdgeSwipe(_ gesture: UIScreenEdgePanGestureRecognizer) {
-        if gesture.state == .recognized {
-            let historyVC = HistoryViewController()
-            navigationController?.pushViewController(historyVC, animated: true)
-        }
-    }
-    
     @objc private func showHistory() {
-        let historyVC = HistoryViewController()
+        let historyVC = AlcoholHistoryViewController()
         navigationController?.pushViewController(historyVC, animated: true)
     }
     
     @objc private func addDrinkTapped() {
         let pickerVC = DrinkPickerViewController()
-        pickerVC.modalPresentationStyle = .pageSheet
+        pickerVC.modalPresentationStyle = .formSheet
         
         if let sheet = pickerVC.sheetPresentationController {
             sheet.detents = [.medium()]
             sheet.prefersGrabberVisible = true
             sheet.preferredCornerRadius = 16
         }
-        pickerVC.drinks = viewModel.availableDrinks
         
-        pickerVC.onDrinkSelected = { [weak self] drink in
+        pickerVC.drinks = viewModel.availableDrinks.map {
+            PickerDrink(name: $0.name, amount: $0.amountML, category: $0.category)
+        }
+        
+        pickerVC.onDrinkSelected = { [weak self] selected in
             guard let self = self else { return }
-            let exceeded = self.viewModel.addEntry(name: drink.name, amountMG: drink.caffeineMG)
-            
+            let exceeded = self.viewModel.addEntry(name: selected.name, amountML: selected.amount)
+
             self.dismiss(animated: true) {
                 if exceeded {
                     let alert = UIAlertController(
-                        title: "⚠️ Caffeine Limit Exceeded",
-                        message: "You’ve consumed more than 400mg of caffeine today. Please be cautious!",
+                        title: "⚠️ Alcohol Limit Exceeded",
+                        message: "You've exceeded your daily alcohol intake. Please be cautious.",
                         preferredStyle: .alert
                     )
                     alert.addAction(UIAlertAction(title: "OK", style: .default))
@@ -136,12 +119,12 @@ class MainViewController: UIViewController {
                 }
             }
         }
-        pickerVC.modalPresentationStyle = .formSheet
+        
         present(pickerVC, animated: true)
     }
 }
 
-extension MainViewController: UITableViewDataSource {
+extension AlcoholViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return viewModel.numberOfEntriesToday()
     }
@@ -150,18 +133,14 @@ extension MainViewController: UITableViewDataSource {
         guard let entry = viewModel.entryFromToday(at: indexPath.row) else {
             return UITableViewCell()
         }
-        
-        let cell = tableView.dequeueReusableCell(withIdentifier: CaffeineEntryCell.identifier, for: indexPath) as! CaffeineEntryCell
-        cell.configure(with: entry)
+        let cell = tableView.dequeueReusableCell(withIdentifier: "entryCell", for: indexPath)
+        cell.textLabel?.text = "\(entry.name) - \(entry.amountML) ml"
         return cell
     }
     
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
             viewModel.deleteEntryFromToday(at: indexPath.row)
-            let generator = UIImpactFeedbackGenerator(style: .light)
-            generator.impactOccurred()
         }
     }
 }
-

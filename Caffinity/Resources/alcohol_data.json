@@ -1,0 +1,5 @@
+[
+    { "name": "Beer 🍺", "amountML": 500, "category": "Beer" },
+    { "name": "Wine 🍷", "amountML": 150, "category": "Wine" },
+    { "name": "Whiskey 🥃", "amountML": 50, "category": "Spirits" }
+]
