@@ -39,6 +39,8 @@ class AlcoholViewController: UIViewController {
         
         navigationItem.rightBarButtonItem = UIBarButtonItem(title: "History ❯", style: .plain, target: self, action: #selector(showHistory))
         
+        edgeSwipeGesture()
+        
         setupLayout()
         setupBindings()
         
@@ -82,6 +84,19 @@ class AlcoholViewController: UIViewController {
     private func updateUI() {
         totalLabel.text = "Total Alcohol Today: \(viewModel.totalAlcoholToday()) ml"
         tableView.reloadData()
+    }
+    
+    private func edgeSwipeGesture() {
+        let edgeSwipe = UIScreenEdgePanGestureRecognizer(target: self, action: #selector(handleEdgeSwipe(_:)))
+        edgeSwipe.edges = [.right]
+        view.addGestureRecognizer(edgeSwipe)
+    }
+    
+    @objc private func handleEdgeSwipe(_ gesture: UIScreenEdgePanGestureRecognizer) {
+        if gesture.state == .recognized {
+            let historyVC = AlcoholHistoryViewController()
+            navigationController?.pushViewController(historyVC, animated: true)
+        }
     }
     
     @objc private func showHistory() {

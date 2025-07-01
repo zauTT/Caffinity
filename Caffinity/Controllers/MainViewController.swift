@@ -118,7 +118,6 @@ class MainViewController: UIViewController {
             sheet.prefersGrabberVisible = true
             sheet.preferredCornerRadius = 16
         }
-//        pickerVC.drinks = viewModel.availableDrinks
         
         pickerVC.drinks = viewModel.availableDrinks.map {
             PickerDrink(name: $0.name, amount: $0.amount, category: $0.category)
